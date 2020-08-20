@@ -1,0 +1,84 @@
+function [chi2 p] = getzStatp2regions(region,region2,DT)
+p = nan(3,4);
+chi2 = nan(3,4);
+
+tbl = table;
+[VS idx] = unique([DT.(region)(:,2);DT.(region2)(:,2)],'stable');
+idx = idx(~isnan(VS));
+VS = VS(~isnan(VS));
+
+
+tbl.VS = VS;
+[VS, idx] = unique(DT.(region)(:,2),'stable');
+idx = idx(~isnan(VS));
+tbl.RRE = unique([DT.(region)(~isnan(DT.(region)(:,1)),3);DT.(region2)(~isnan(DT.(region2)(:,1)),3)],'stable');
+tbl.sRPE = unique([DT.(region)(~isnan(DT.(region)(:,1)),1);DT.(region2)(~isnan(DT.(region2)(:,1)),1)],'stable');
+tbl.monkey = [DT.monkey(idx);DT.monkey(idx)];
+tbl.Changing = [DT.Changing(idx);DT.Changing(idx)];
+tbl.Stable = [DT.Stable(idx);DT.Stable(idx)];
+tbl.Equi = [DT.Equiprobable(idx);DT.Equiprobable(idx)];
+tbl.region = ones(height(tbl),1);
+tbl.region(length(idx)+1:end) = -1;
+model = fitlme(tbl,'sRPE~1+region+(1+region|monkey)');
+null = fitlme(tbl,'sRPE~-1+region+(1+region|monkey)');
+comp = compare(null,model);
+p(1,1) = double(comp.pValue(2));
+chi2(1,1) = double(comp.LRStat(2));
+model = fitlme(tbl(tbl.Changing==1,:),'sRPE~1+region+(1+region|monkey)');
+null = fitlme(tbl(tbl.Changing==1,:),'sRPE~-1+region+(1+region|monkey)');
+comp = compare(null,model);
+p(1,2) = double(comp.pValue(2));
+chi2(1,2) = double(comp.LRStat(2));
+model = fitlme(tbl(tbl.Stable==1,:),'sRPE~1+region+(1+region|monkey)');
+null = fitlme(tbl(tbl.Stable==1,:),'sRPE~-1+region+(1+region|monkey)');
+comp = compare(null,model);
+p(1,3) = double(comp.pValue(2));
+chi2(1,3) = double(comp.LRStat(2));
+model = fitlme(tbl(tbl.Equi==1,:),'sRPE~1+region+(1+region|monkey)');
+null = fitlme(tbl(tbl.Equi==1,:),'sRPE~-1+region+(1+region|monkey)');
+comp = compare(null,model);
+p(1,4) = double(comp.pValue(2));
+chi2(1,4) = double(comp.LRStat(2));
+
+model = fitlme(tbl,'VS~1+region+(1+region|monkey)');
+null = fitlme(tbl,'VS~-1+region+(1+region|monkey)');
+comp = compare(null,model);
+p(2,1) = double(comp.pValue(2));
+chi2(2,1) = double(comp.LRStat(2));
+model = fitlme(tbl(tbl.Changing==1,:),'VS~1+region+(1+region|monkey)');
+null = fitlme(tbl(tbl.Changing==1,:),'VS~-1+region+(1+region|monkey)');
+comp = compare(null,model);
+p(2,2) = double(comp.pValue(2));
+chi2(2,2) = double(comp.LRStat(2));
+model = fitlme(tbl(tbl.Stable==1,:),'VS~1+region+(1+region|monkey)');
+null = fitlme(tbl(tbl.Stable==1,:),'VS~-1+region+(1+region|monkey)');
+comp = compare(null,model);
+p(2,3) = double(comp.pValue(2));
+chi2(2,3) = double(comp.LRStat(2));
+model = fitlme(tbl(tbl.Equi==1,:),'VS~1+region+(1+region|monkey)');
+null = fitlme(tbl(tbl.Equi==1,:),'VS~-1+region+(1+region|monkey)');
+comp = compare(null,model);
+p(2,4) = double(comp.pValue(2));
+chi2(2,4) = double(comp.LRStat(2));
+
+
+model = fitlme(tbl,'RRE~1+region+(1+region|monkey)');
+null = fitlme(tbl,'RRE~-1+region+(1+region|monkey)');
+comp = compare(null,model);
+p(3,1) = double(comp.pValue(2));
+chi2(3,1) = double(comp.LRStat(2));
+model = fitlme(tbl(tbl.Changing==1,:),'RRE~1+region+(1+region|monkey)');
+null = fitlme(tbl(tbl.Changing==1,:),'RRE~-1+region+(1+region|monkey)');
+comp = compare(null,model);
+p(3,2) = double(comp.pValue(2));
+chi2(3,2) = double(comp.LRStat(2));
+model = fitlme(tbl(tbl.Stable==1,:),'RRE~1+region+(1+region|monkey)');
+null = fitlme(tbl(tbl.Stable==1,:),'RRE~-1+region+(1+region|monkey)');
+comp = compare(null,model);
+p(3,3) = double(comp.pValue(2));
+chi2(3,3) = double(comp.LRStat(2));
+model = fitlme(tbl(tbl.Equi==1,:),'RRE~1+region+(1+region|monkey)');
+null = fitlme(tbl(tbl.Equi==1,:),'RRE~-1+region+(1+region|monkey)');
+comp = compare(null,model);
+p(3,4) = double(comp.pValue(2));
+chi2(3,4) = double(comp.LRStat(2));

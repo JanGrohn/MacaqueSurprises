@@ -1,0 +1,53 @@
+function [chi2 p] = getzStatpContrast(region,DT)
+p = nan(3,2);
+chi2 = nan(3,2);
+
+tbl = table;
+[VS idx] = unique(DT.(region)(:,2),'stable');
+idx = idx(~isnan(VS));
+VS = VS(~isnan(VS));
+tbl.VS = VS;
+tbl.RRE = unique(DT.(region)(~isnan(DT.(region)(:,1)),3),'stable');
+tbl.SRPE = unique(DT.(region)(~isnan(DT.(region)(:,1)),1),'stable');
+tbl.monkey = DT.monkey(idx);
+tbl.Changing = DT.Changing(idx);
+tbl.Stable = DT.Stable(idx);
+tbl.Equi = DT.Equiprobable(idx);
+tbl.ChangingEqui = ones(height(tbl),1);
+tbl.ChangingEqui(tbl.Equi==1) = -1;
+tbl.ChangingEqui(tbl.Stable==1) = nan;
+tbl.StableEqui = ones(height(tbl),1);
+tbl.StableEqui(tbl.Equi==1) = -1;
+tbl.StableEqui(tbl.Changing==1) = nan;
+model = fitlme(tbl(tbl.Changing==1|tbl.Equi==1,:),'SRPE~1+ChangingEqui+(1+ChangingEqui|monkey)');
+null = fitlme(tbl(tbl.Changing==1|tbl.Equi==1,:),'SRPE~1+(1+ChangingEqui|monkey)');
+comp = compare(null,model);
+p(1,1) = double(comp.pValue(2));
+chi2(1,1) = double(comp.LRStat(2));
+model = fitlme(tbl(tbl.Stable==1|tbl.Equi==1,:),'SRPE~1+StableEqui+(1+StableEqui|monkey)');
+null = fitlme(tbl(tbl.Stable==1|tbl.Equi==1,:),'SRPE~1+(1+StableEqui|monkey)');
+comp = compare(null,model);
+p(1,2) = double(comp.pValue(2));
+chi2(1,2) = double(comp.LRStat(2));
+
+model = fitlme(tbl(tbl.Changing==1|tbl.Equi==1,:),'VS~1+ChangingEqui+(1+ChangingEqui|monkey)');
+null = fitlme(tbl(tbl.Changing==1|tbl.Equi==1,:),'VS~1+(1+ChangingEqui|monkey)');
+comp = compare(null,model);
+p(2,1) = double(comp.pValue(2));
+chi2(2,1) = double(comp.LRStat(2));
+model = fitlme(tbl(tbl.Stable==1|tbl.Equi==1,:),'VS~1+StableEqui+(1+StableEqui|monkey)');
+null = fitlme(tbl(tbl.Stable==1|tbl.Equi==1,:),'VS~1+(1+StableEqui|monkey)');
+comp = compare(null,model);
+p(2,2) = double(comp.pValue(2));
+chi2(2,2) = double(comp.LRStat(2));
+
+model = fitlme(tbl(tbl.Changing==1|tbl.Equi==1,:),'RRE~1+ChangingEqui+(1+ChangingEqui|monkey)');
+null = fitlme(tbl(tbl.Changing==1|tbl.Equi==1,:),'RRE~1+(1+ChangingEqui|monkey)');
+comp = compare(null,model);
+p(3,1) = double(comp.pValue(2));
+chi2(3,1) = double(comp.LRStat(2));
+model = fitlme(tbl(tbl.Stable==1|tbl.Equi==1,:),'RRE~1+StableEqui+(1+StableEqui|monkey)');
+null = fitlme(tbl(tbl.Stable==1|tbl.Equi==1,:),'RRE~1+(1+StableEqui|monkey)');
+comp = compare(null,model);
+p(3,2) = double(comp.pValue(2));
+chi2(3,2) = double(comp.LRStat(2));
